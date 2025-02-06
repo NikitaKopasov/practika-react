@@ -1,0 +1,84 @@
+.logo
+{
+  width: 60px;
+  height: 60px;
+}
+.app-header
+{
+  text-align: center;
+}
+#new-board
+{
+  width: 250px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  background-color:limegreen;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  margin-left: 30px;
+}
+.plus
+{
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+.board-form {
+  margin-top: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #f9f9f9;
+  width: 250px;
+  margin-left: 30px;
+  padding: 0 30px; 
+}
+.board-form input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.form-buttons
+{
+  text-align: center;
+  margin-bottom: 15px;
+}
+.form-buttons button {
+  margin-right: 10px;
+  padding: 5px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+
+}
+
+.form-buttons button:first-child {
+  background-color: #28a745;
+  color: white;
+}
+
+.form-buttons button:last-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+.board{
+  background-color: #f0f0f0;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 20px;
+  width: 200px;
+  height: 50px;
+  font-size: 27px;
+  margin-left: 20px;
+}
+.name-board
+{
+  margin-left: 11px;
+}
+
+

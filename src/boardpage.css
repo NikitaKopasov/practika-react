@@ -1,0 +1,119 @@
+.logo
+{
+  width: 60px;
+  height: 60px;
+}
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Стили для страницы доски */
+  .board-page {
+    max-width: 810px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Заголовок с логотипом */
+  
+  .board-header
+  {
+    text-align: center;
+    margin-top: 20px;
+  }
+  .logo {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .logo:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Заголовок */
+  h1 {
+    margin-top: 10px;
+    font-size: 30px;
+    text-align: center;
+  }
+  
+  /* Кнопка "Добавить список" */
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+    margin-bottom: 10px;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Стили для списка */
+  .lists {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .list {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    flex-grow: 1;
+  }
+  
+  .list h3 {
+    margin-top: 0;
+    font-size: 18px;
+  }
+  
+  /* Поле ввода */
+  input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Стили для элементов списка */
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: white;
+    margin-top: 5px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  li input[type="checkbox"] {
+    cursor: pointer;
+  }
+  
+  li.completed {
+    text-decoration: line-through;
+    color: gray;
+    opacity: 0.7;
+  }
