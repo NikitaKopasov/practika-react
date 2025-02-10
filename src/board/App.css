@@ -65,7 +65,7 @@
 }
 
 .board{
-  background-color: #f0f0f0;
+  background-color: #4285B4;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
@@ -80,5 +80,42 @@
 {
   margin-left: 11px;
 }
+
+
+
+.board-container {
+  display: flex;
+  gap: 10px; /* Расстояние между кнопками */
+  margin-top: 10px;
+  margin-left: 10px;
+  align-items: center;
+}
+
+.board-container button {
+  padding: 8px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.editboard {
+  background-color: #ffc107; /* Желтый для редактирования */
+  color: black;
+  width: 45px;
+  height: 45px;
+}
+
+.deletboard {
+  background-color: #dc3545; /* Красный для удаления */
+  color: white;
+  width: 45px;
+  height: 45px;
+}
+
+.board-container button:hover {
+  opacity: 0.8;
+}
+
 
 
