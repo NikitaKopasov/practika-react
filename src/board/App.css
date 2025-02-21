@@ -1,12 +1,33 @@
-.logo
-{
-  width: 60px;
-  height: 60px;
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
 }
-.app-header
-{
-  text-align: center;
+
+.logo-header {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
 }
+
+.logout {
+  margin-left: auto;
+}
+
+.logout-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #ff4b5c;
+  color: white;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #d63a4a;
+}
+
 #new-board
 {
   width: 250px;

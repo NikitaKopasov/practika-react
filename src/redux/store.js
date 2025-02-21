@@ -4,6 +4,9 @@ const boardSlice = createSlice({
   name: 'boards',
   initialState: [],
   reducers: {
+    setBoards: (state, action) => {
+      return action.payload; // Полностью заменяет состояние на новое
+    },    
     addBoard: (state, action) => {
       state.push({ id: Date.now(), name: action.payload, lists: [] });
     },
@@ -93,7 +96,7 @@ const boardSlice = createSlice({
 export const { 
   addBoard, removeBoard, updateBoard, 
   addList, removeList, updateList, 
-  addItem, toggleItem, removeItem, updateItem 
+  addItem, toggleItem, removeItem, updateItem, setBoards 
 } = boardSlice.actions;
 
 export const store = configureStore({
