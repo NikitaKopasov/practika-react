@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addList, addItem, toggleItem, removeList, updateList } from '../redux/store';
+import { addList, addItem, toggleItem, removeList, updateList, removeItem, updateItem } from '../redux/store';
 
 import { useState } from 'react';
 import './boardpage.css';
@@ -17,8 +17,9 @@ function BoardPage() {
     dispatch(addList({ boardId }));
   };
   const OnClickNavigate = () => navigate('/')
+
   return (
-    <div >
+    <div>
       <header className="board-header">
         <img 
           src={smile} 
@@ -30,19 +31,17 @@ function BoardPage() {
       </header>
 
       {board && (
-        <>
         <div className='board-page'>
-            <button className="add-list-button" onClick={handleAddList}>
-              Добавить список
-            </button>
+          <button className="add-list-button" onClick={handleAddList}>
+            Добавить список
+          </button>
 
-            <div className="lists">
-              {board.lists.map(list => (
-                <List key={list.id} list={list} boardId={boardId} dispatch={dispatch} />
-              ))}
-            </div>
+          <div className="lists">
+            {board.lists.map(list => (
+              <List key={list.id} list={list} boardId={boardId} dispatch={dispatch} />
+            ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
@@ -64,21 +63,20 @@ function List({ list, boardId, dispatch }) {
     dispatch(updateList({ boardId, listId: list.id, name: listName }));
     setIsEditing(false);
   };
-  const editListButton = () => setIsEditing(true)
-  const deleteListButton = () => dispatch(removeList({ boardId, listId: list.id }))
-  const onChangesetListName = (e) => setListName(e.target.value)
-  const onKeyPresshandleUpdateList = (e) => e.key === 'Enter' && handleUpdateList()
-  const onClicksetIsEditing = () => setIsEditing(false)
-  const onChangesetTask = (e) => setTask(e.target.value)
-  const onChangedispatch = (item) => () => dispatch(toggleItem({ boardId, listId: list.id, itemId: item.id }));
+
+  const editListButton = () => setIsEditing(true);
+  const deleteListButton = () => dispatch(removeList({ boardId, listId: list.id }));
+  const onChangesetListName = (e) => setListName(e.target.value);
+  const onKeyPresshandleUpdateList = (e) => e.key === 'Enter' && handleUpdateList();
+  const onClicksetIsEditing = () => setIsEditing(false);
+  const onChangesetTask = (e) => setTask(e.target.value);
+
 
   return (
     <div className="list">
       <div className="list-actions">
         <button className="edit-list-button" onClick={editListButton}>✏️</button>
-        <button className="delete-list-button" onClick={deleteListButton}>
-          ❌
-        </button>
+        <button className="delete-list-button" onClick={deleteListButton}>❌</button>
       </div>
 
       {isEditing ? (
@@ -106,21 +104,53 @@ function List({ list, boardId, dispatch }) {
 
       <ul>
         {list.items.map((item) => (
-          <li key={item.id} className={item.completed ? 'completed' : ''}>
-            <input
-              type="checkbox"
-              checked={item.completed}
-              onChange={onChangedispatch(item)}
-            />
-            {item.text}
-          </li>
+          <ListItem key={item.id} item={item} listId={list.id} boardId={boardId} dispatch={dispatch} />
         ))}
       </ul>
     </div>
   );
 }
 
+function ListItem({ item, listId, boardId, dispatch }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(item.text);
 
+  const handleUpdateItem = () => {
+    if (text.trim()) {
+      dispatch(updateItem({ boardId, listId, itemId: item.id, text }));
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <li className={item.completed ? 'completed' : ''}>
+      <input
+        type="checkbox"
+        checked={item.completed}
+        onChange={() => dispatch(toggleItem({ boardId, listId, itemId: item.id }))}
+      />
+      
+      {isEditing ? (
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleUpdateItem()}
+        />
+      ) : (
+        <span onDoubleClick={() => setIsEditing(true)}>{item.text}</span>
+      )}
+
+      {isEditing ? (
+        <button onClick={handleUpdateItem}>✔</button>
+      ) : (
+        <button onClick={() => setIsEditing(true)}>✏️</button>
+      )}
+
+      <button onClick={() => dispatch(removeItem({ boardId, listId, itemId: item.id }))}>❌</button>
+    </li>
+  );
+}
 
 
 export default BoardPage;

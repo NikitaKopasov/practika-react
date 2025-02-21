@@ -62,11 +62,39 @@ const boardSlice = createSlice({
           }
         }
       }
+    },
+    updateItem: (state, action) => {
+      const { boardId, listId, itemId, text } = action.payload;
+      const board = state.find(b => b.id === boardId);
+      if (board) {
+        const list = board.lists.find(l => l.id === listId);
+        if (list) {
+          const item = list.items.find(i => i.id === itemId);
+          if (item) {
+            item.text = text;
+          }
+        }
+      }
+    },
+    
+    removeItem: (state, action) => {
+      const { boardId, listId, itemId } = action.payload;
+      const board = state.find(b => b.id === boardId);
+      if (board) {
+        const list = board.lists.find(l => l.id === listId);
+        if (list) {
+          list.items = list.items.filter(i => i.id !== itemId);
+        }
+      }
     }
   }
 });
 
-export const { addBoard, removeBoard, updateBoard, addList, removeList, updateList, addItem, toggleItem } = boardSlice.actions;
+export const { 
+  addBoard, removeBoard, updateBoard, 
+  addList, removeList, updateList, 
+  addItem, toggleItem, removeItem, updateItem 
+} = boardSlice.actions;
 
 export const store = configureStore({
   reducer: { boards: boardSlice.reducer }
