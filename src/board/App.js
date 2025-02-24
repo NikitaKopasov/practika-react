@@ -84,7 +84,7 @@ function App() {
       alert('Доска успешно удалена');
     } catch (error) {
       console.error('Ошибка при удалении доски:', error.response ? error.response.data : error.message);
-      alert(`Ошибка: ${error.response ? JSON.stringify(error.response.data) : JSON.stringify(error)}`);
+      alert(`Ошибка: ${error.response ? error.response.data.message : error.message}`);
     }
   };
   
