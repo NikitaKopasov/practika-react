@@ -5,8 +5,9 @@ const boardSlice = createSlice({
   initialState: [],
   reducers: {
     setBoards: (state, action) => {
-      return action.payload; // Полностью заменяет состояние на новое
-    },    
+      // Мутируем состояние, а не заменяем его
+      state.splice(0, state.length, ...action.payload);
+    },
     addBoard: (state, action) => {
       state.push({ id: Date.now(), name: action.payload, lists: [] });
     },
@@ -79,7 +80,6 @@ const boardSlice = createSlice({
         }
       }
     },
-    
     removeItem: (state, action) => {
       const { boardId, listId, itemId } = action.payload;
       const board = state.find(b => b.id === boardId);
