@@ -4,12 +4,12 @@ const boardSlice = createSlice({
   name: 'boards',
   initialState: [],
   reducers: {
+    // Существующие действия для досок
     setBoards: (state, action) => {
-      // Мутируем состояние, а не заменяем его
       state.splice(0, state.length, ...action.payload);
     },
     addBoard: (state, action) => {
-      state.push({ id: Date.now(), name: action.payload, lists: [] });
+      state.push(action.payload);
     },
     removeBoard: (state, action) => {
       return state.filter(board => board.id !== action.payload);
@@ -20,6 +20,8 @@ const boardSlice = createSlice({
         board.name = action.payload.name;
       }
     },
+
+    // Действия для работы со списками
     addList: (state, action) => {
       const { boardId } = action.payload;
       const board = state.find(b => b.id === boardId);
@@ -44,6 +46,8 @@ const boardSlice = createSlice({
         }
       }
     },
+
+    // Действия для работы с задачами
     addItem: (state, action) => {
       const { boardId, listId, text } = action.payload;
       const board = state.find(b => b.id === boardId);
@@ -89,14 +93,24 @@ const boardSlice = createSlice({
           list.items = list.items.filter(i => i.id !== itemId);
         }
       }
-    }
+    },
+
+    // Для работы с авторизацией и регистрацией
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
+    logout: (state) => {
+      state.user = null;
+    },
   }
 });
 
+// Экспортируем все действия
 export const { 
-  addBoard, removeBoard, updateBoard, 
+  setBoards, addBoard, removeBoard, updateBoard, 
   addList, removeList, updateList, 
-  addItem, toggleItem, removeItem, updateItem, setBoards 
+  addItem, toggleItem, updateItem, removeItem, 
+  setUser, logout 
 } = boardSlice.actions;
 
 export const store = configureStore({

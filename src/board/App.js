@@ -20,10 +20,10 @@ function App() {
   useEffect(() => {
     const fetchBoards = async () => {
       try {
-        const response = await axios.get(`${API_URL}/boards`, {
+        const boardsResponse = await axios.get(`${API_URL}/boards`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        dispatch(setBoards(response.data));
+        dispatch(setBoards(boardsResponse.data));
       } catch (error) {
         console.error('Ошибка при получении досок', error);
       }
@@ -47,7 +47,7 @@ function App() {
             { name: boardName }, 
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          dispatch(addBoard(response.data));
+          dispatch(addBoard(response.data)); // Добавляем объект с ID от сервера
           alert('Доска успешно создана');
         }
         setBoardName('');
@@ -64,9 +64,6 @@ function App() {
       }
     }
   };
-  
-  
-  
 
   const handleEditBoard = (board) => {
     setBoardName(board.name);
@@ -87,7 +84,6 @@ function App() {
       alert(`Ошибка: ${error.response ? error.response.data.message : error.message}`);
     }
   };
-  
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -138,7 +134,6 @@ function App() {
       <aside>
         {boards.map(board => (
           <div key={board.boardId || board.id} className="board-container">
-
             <button className="board" onClick={OnClickNavigate(board)}>
               {board.name}
             </button>
