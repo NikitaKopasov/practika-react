@@ -1,26 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import './boardpage.css';
 import smile from '../assets/images/smile.png';
+import { setLists, addList, removeList, updateList, setItem, addItem, toggleItem, updateItem, removeItem } from '../redux/store';
 
 function BoardPage() {
   const { id } = useParams();
   const boardId = id;
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const [lists, setLists] = useState([]);
+  const lists = useSelector(state => state.boards.find(board => board.id === Number(boardId))?.lists || []);
 
   useEffect(() => {
+    // Получаем списки с сервера
     axios.get(`http://localhost:7000/list/list?boardId=${boardId}`)
-      .then(response => setLists(response.data))
+      .then(response => {
+        dispatch(setLists({ boardId, lists: response.data }));
+      })
       .catch(error => console.error('Ошибка загрузки списков:', error));
-  }, [boardId]);
+  }, [boardId, dispatch]);
 
   const handleAddList = async () => {
     try {
       const response = await axios.post('http://localhost:7000/list/createList', { boardId, name: `Список ${lists.length + 1}` });
-      setLists([...lists, response.data]);
+      dispatch(addList({ boardId, list: response.data }));
     } catch (error) {
       console.error('Ошибка создания списка:', error);
     }
@@ -42,7 +48,7 @@ function BoardPage() {
 
         <div className="lists">
           {lists.map(list => (
-            <List key={list.id} list={list} boardId={boardId} setLists={setLists} lists={lists} />
+            <List key={list.id} list={list} boardId={boardId} />
           ))}
         </div>
       </div>
@@ -50,21 +56,26 @@ function BoardPage() {
   );
 }
 
-function List({ list, boardId, setLists, lists }) {
+function List({ list, boardId }) {
+  const dispatch = useDispatch();
   const [task, setTask] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [listName, setListName] = useState(list.name);
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(list.items || []);
 
   useEffect(() => {
     axios.get(`http://localhost:7000/task/task?boardId=${boardId}&listId=${list.id}`)
-      .then(response => setTasks(response.data))
+      .then(response => {
+        setTasks(response.data);
+        dispatch(setItem({ boardId, listId: list.id, tasks: response.data }));
+      })
       .catch(error => console.error('Ошибка загрузки задач:', error));
-  }, [boardId, list.id]);
+  }, [boardId, list.id, dispatch]);
 
   const handleUpdateList = async () => {
     try {
       await axios.put('http://localhost:7000/list/editList', { name: listName, listId: list.id, boardId });
+      dispatch(updateList({ boardId, listId: list.id, name: listName }));
       setIsEditing(false);
     } catch (error) {
       console.error('Ошибка обновления списка:', error);
@@ -74,7 +85,7 @@ function List({ list, boardId, setLists, lists }) {
   const deleteListButton = async () => {
     try {
       await axios.delete('http://localhost:7000/list/deleteList', { params: { listId: list.id, boardId } });
-      setLists(lists.filter(l => l.id !== list.id));
+      dispatch(removeList({ boardId, listId: list.id }));
     } catch (error) {
       console.error('Ошибка удаления списка:', error);
     }
@@ -84,13 +95,16 @@ function List({ list, boardId, setLists, lists }) {
     if (e.key === 'Enter' && task.trim()) {
       try {
         const response = await axios.post('http://localhost:7000/task/createTask', { name: task, boardId, listId: list.id });
-        setTasks([...tasks, response.data]);
-        setTask('');
+        dispatch(addItem({ boardId, listId: list.id, text: task })); // Используем list.id вместо listId
+        setTask(''); // Очищаем поле ввода
       } catch (error) {
         console.error('Ошибка добавления задачи:', error);
       }
     }
   };
+  
+  
+  
 
   const onchangeSetListName = e => setListName(e.target.value);
   const onchangeSetTask = e => setTask(e.target.value);
@@ -119,20 +133,39 @@ function List({ list, boardId, setLists, lists }) {
       <input type="text" value={task} onChange={onchangeSetTask} onKeyPress={handleAddTask} placeholder="Добавить элемент..." />
       <ul>
         {tasks.map((item) => (
-          <ListItem key={item.id} item={item} listId={list.id} boardId={boardId} setTasks={setTasks} tasks={tasks} />
+          <ListItem key={item.id} item={item} listId={list.id} boardId={boardId} />
         ))}
       </ul>
     </div>
   );
 }
 
-function ListItem({ item, listId, boardId, setTasks, tasks }) {
+function ListItem({ item, listId, boardId }) {
+  const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(item.name);
+
+  const handleToggleActive = async () => {
+    try {
+      const updatedItem = { ...item, isActive: !item.isActive };
+      await axios.put('http://localhost:7000/task/editTask', {
+        taskId: item.id,
+        listId,
+        boardId,
+        name: item.name,
+        isActive: updatedItem.isActive,
+      });
+
+      dispatch(toggleItem({ boardId, listId, itemId: item.id }));
+    } catch (error) {
+      console.error('Ошибка изменения статуса задачи:', error);
+    }
+  };
 
   const handleUpdateItem = async () => {
     try {
       await axios.put('http://localhost:7000/task/editTask', { name: text, isActive: item.isActive, taskId: item.id, listId, boardId });
+      dispatch(updateItem({ boardId, listId, itemId: item.id, text }));
       setIsEditing(false);
     } catch (error) {
       console.error('Ошибка обновления задачи:', error);
@@ -142,7 +175,7 @@ function ListItem({ item, listId, boardId, setTasks, tasks }) {
   const onClickRemoveItem = async () => {
     try {
       await axios.delete('http://localhost:7000/task/deleteTask', { params: { taskId: item.id, listId, boardId } });
-      setTasks(tasks.filter(t => t.id !== item.id));
+      dispatch(removeItem({ boardId, listId, itemId: item.id }));
     } catch (error) {
       console.error('Ошибка удаления задачи:', error);
     }
@@ -152,7 +185,7 @@ function ListItem({ item, listId, boardId, setTasks, tasks }) {
   const onClickEditItem = () => setIsEditing(true);
 
   return (
-    <li>
+    <li className={item.isActive ? 'active' : 'inactive'}>
       {isEditing ? (
         <input type="text" value={text} onChange={onchangeSetText} onKeyPress={e => e.key === 'Enter' && handleUpdateItem()} />
       ) : (
@@ -162,6 +195,9 @@ function ListItem({ item, listId, boardId, setTasks, tasks }) {
       <button onClick={handleUpdateItem}>✔</button>
       <button onClick={onClickEditItem}>✏️</button>
       <button onClick={onClickRemoveItem}>❌</button>
+      <button onClick={handleToggleActive}>
+        {item.isActive ? 'Сделать неактивным' : 'Сделать активным'}
+      </button>
     </li>
   );
 }

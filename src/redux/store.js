@@ -22,6 +22,13 @@ const boardSlice = createSlice({
     },
 
     // Действия для работы со списками
+    setLists: (state, action) => {
+      const { boardId, lists } = action.payload;
+      const board = state.find(b => b.id === boardId);
+      if (board) {
+        board.lists = lists;
+      }
+    },
     addList: (state, action) => {
       const { boardId } = action.payload;
       const board = state.find(b => b.id === boardId);
@@ -48,6 +55,16 @@ const boardSlice = createSlice({
     },
 
     // Действия для работы с задачами
+    setItem: (state, action) => {
+      const { boardId, listId, tasks } = action.payload;
+      const board = state.find(b => b.id === boardId);
+      if (board) {
+        const list = board.lists.find(l => l.id === listId);
+        if (list) {
+          list.items = tasks;
+        }
+      }
+    },
     addItem: (state, action) => {
       const { boardId, listId, text } = action.payload;
       const board = state.find(b => b.id === boardId);
@@ -108,8 +125,8 @@ const boardSlice = createSlice({
 // Экспортируем все действия
 export const { 
   setBoards, addBoard, removeBoard, updateBoard, 
-  addList, removeList, updateList, 
-  addItem, toggleItem, updateItem, removeItem, 
+  setLists, addList, removeList, updateList, 
+  addItem, toggleItem, updateItem, removeItem, setItem,
   setUser, logout 
 } = boardSlice.actions;
 
