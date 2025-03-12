@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { setBoards, addBoard, removeBoard, updateBoard } from '../redux/store';
+import { fetchBoards, createBoard, editBoard, deleteBoard } from '../component/boards';
 import './App.css';
 import logo from '../assets/images/smile.png';
 import plus from '../assets/images/plus.png';
@@ -14,52 +14,39 @@ function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const boards = useSelector(state => state.boards);
-  const API_URL = 'http://localhost:7000/board';
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    const fetchBoards = async () => {
+    const loadBoards = async () => {
       try {
-        const boardsResponse = await axios.get(`${API_URL}/boards`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        dispatch(setBoards(boardsResponse.data));
+        const data = await fetchBoards(token);
+        dispatch(setBoards(data));
       } catch (error) {
         console.error('Ошибка при получении досок', error);
       }
     };
-    fetchBoards();
+    loadBoards();
   }, [dispatch, token]);
 
   const handleAddBoard = async () => {
     if (boardName.trim()) {
       try {
         if (editBoardId) {
-          await axios.put(`${API_URL}/editBoard`, 
-            { boardId: editBoardId, name: boardName }, 
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          await editBoard(token, editBoardId, boardName);
           dispatch(updateBoard({ id: editBoardId, name: boardName }));
           alert('Доска успешно изменена');
           setEditBoardId(null);
         } else {
-          const response = await axios.post(`${API_URL}/createBoard`, 
-            { name: boardName }, 
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          dispatch(addBoard(response.data)); // Добавляем объект с ID от сервера
+          const newBoard = await createBoard(token, boardName);
+          dispatch(addBoard(newBoard));
           alert('Доска успешно создана');
         }
         setBoardName('');
         setIsOpen(false);
-        
-        // Перезагружаем список досок после добавления новой
-        const boardsResponse = await axios.get(`${API_URL}/boards`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        dispatch(setBoards(boardsResponse.data));
+        const data = await fetchBoards(token);
+        dispatch(setBoards(data));
       } catch (error) {
-        console.error('Ошибка при сохранении доски:', error.response ? error.response.data : error.message);
+        console.error('Ошибка при сохранении доски:', error);
         alert(`Ошибка: ${error.response ? error.response.data.message : error.message}`);
       }
     }
@@ -73,14 +60,11 @@ function App() {
 
   const handleDeleteBoard = async (boardId) => {
     try {
-      await axios.delete(`${API_URL}/deleteBoard`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { boardId } // Передаём ID в query-параметрах
-      });
+      await deleteBoard(token, boardId);
       dispatch(removeBoard(boardId));
       alert('Доска успешно удалена');
     } catch (error) {
-      console.error('Ошибка при удалении доски:', error.response ? error.response.data : error.message);
+      console.error('Ошибка при удалении доски:', error);
       alert(`Ошибка: ${error.response ? error.response.data.message : error.message}`);
     }
   };
@@ -89,13 +73,6 @@ function App() {
     localStorage.removeItem('token');
     navigate('/login');
   };
-
-  const OnClicksetIsOpen = () => setIsOpen(!isOpen);
-  const OnChangesetBoardName = e => setBoardName(e.target.value);
-  const OnClickFalse = () => { setIsOpen(false); setEditBoardId(null); };
-  const OnClickEditBoard = (board) => () => handleEditBoard(board);
-  const OnClickDeletBoard = (board) => () => handleDeleteBoard(board.id);
-  const OnClickNavigate = (board) => () => navigate(`/board/${board.id}`);
 
   return (
     <div className="app">
@@ -109,7 +86,7 @@ function App() {
       </header>
       
       <section>
-        <button id='new-board' onClick={OnClicksetIsOpen}>
+        <button id='new-board' onClick={() => setIsOpen(!isOpen)}>
           <img src={plus} className='plus' alt="plus" /> Новая доска
         </button>
 
@@ -119,13 +96,13 @@ function App() {
             <input 
               type="text" 
               value={boardName} 
-              onChange={OnChangesetBoardName} 
+              onChange={(e) => setBoardName(e.target.value)} 
               className='input-name-board' 
               placeholder="Введите название" 
             />
             <div className='form-buttons'>
               <button onClick={handleAddBoard}>{editBoardId ? 'Изменить' : 'Сохранить'}</button>
-              <button onClick={OnClickFalse}>Отмена</button>
+              <button onClick={() => { setIsOpen(false); setEditBoardId(null); }}>Отмена</button>
             </div>
           </div>
         )}
@@ -134,11 +111,11 @@ function App() {
       <aside>
         {boards.map(board => (
           <div key={board.boardId || board.id} className="board-container">
-            <button className="board" onClick={OnClickNavigate(board)}>
+            <button className="board" onClick={() => navigate(`/board/${board.id}`)}>
               {board.name}
             </button>
-            <button className='editboard' onClick={OnClickEditBoard(board)}>✏️</button>
-            <button className='deletboard' onClick={OnClickDeletBoard(board)}>❌</button>
+            <button className='editboard' onClick={() => handleEditBoard(board)}>✏️</button>
+            <button className='deletboard' onClick={() => handleDeleteBoard(board.id)}>❌</button>
           </div>
         ))}
       </aside>

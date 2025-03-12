@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
+import { setLists, addList, removeList, updateList, setItem, addItem, toggleItem, updateItem, removeItem } from '../redux/store';
+import { fetchLists, createList, deleteList, editList, fetchTasks, createTask, editTask, deleteTask } from '../component/pageboard';
 import './boardpage.css';
 import smile from '../assets/images/smile.png';
-import { setLists, addList, removeList, updateList, setItem, addItem, toggleItem, updateItem, removeItem } from '../redux/store';
 
 function BoardPage() {
   const { id } = useParams();
@@ -15,8 +15,7 @@ function BoardPage() {
   const lists = useSelector(state => state.boards.find(board => board.id === Number(boardId))?.lists || []);
 
   useEffect(() => {
-    // Получаем списки с сервера
-    axios.get(`http://localhost:7000/list/list?boardId=${boardId}`)
+    fetchLists(boardId)
       .then(response => {
         dispatch(setLists({ boardId, lists: response.data }));
       })
@@ -25,7 +24,7 @@ function BoardPage() {
 
   const handleAddList = async () => {
     try {
-      const response = await axios.post('http://localhost:7000/list/createList', { boardId, name: `Список ${lists.length + 1}` });
+      const response = await createList(boardId, `Список ${lists.length + 1}`);
       dispatch(addList({ boardId, list: response.data }));
     } catch (error) {
       console.error('Ошибка создания списка:', error);
@@ -64,7 +63,7 @@ function List({ list, boardId }) {
   const [tasks, setTasks] = useState(list.items || []);
 
   useEffect(() => {
-    axios.get(`http://localhost:7000/task/task?boardId=${boardId}&listId=${list.id}`)
+    fetchTasks(boardId, list.id)
       .then(response => {
         setTasks(response.data);
         dispatch(setItem({ boardId, listId: list.id, tasks: response.data }));
@@ -74,7 +73,7 @@ function List({ list, boardId }) {
 
   const handleUpdateList = async () => {
     try {
-      await axios.put('http://localhost:7000/list/editList', { name: listName, listId: list.id, boardId });
+      await editList(boardId, list.id, listName);
       dispatch(updateList({ boardId, listId: list.id, name: listName }));
       setIsEditing(false);
     } catch (error) {
@@ -84,7 +83,7 @@ function List({ list, boardId }) {
 
   const deleteListButton = async () => {
     try {
-      await axios.delete('http://localhost:7000/list/deleteList', { params: { listId: list.id, boardId } });
+      await deleteList(boardId, list.id);
       dispatch(removeList({ boardId, listId: list.id }));
     } catch (error) {
       console.error('Ошибка удаления списка:', error);
@@ -94,16 +93,14 @@ function List({ list, boardId }) {
   const handleAddTask = async (e) => {
     if (e.key === 'Enter' && task.trim()) {
       try {
-        const response = await axios.post('http://localhost:7000/task/createTask', { name: task, boardId, listId: list.id });
-        dispatch(addItem({ boardId, listId: list.id, text: task })); // Используем list.id вместо listId
-        setTask(''); // Очищаем поле ввода
+        await createTask(boardId, list.id, task); // Просто вызываем функцию без сохранения ответа
+        dispatch(addItem({ boardId, listId: list.id, text: task }));
+        setTask('');
       } catch (error) {
         console.error('Ошибка добавления задачи:', error);
       }
     }
   };
-  
-  
   
 
   const onchangeSetListName = e => setListName(e.target.value);
@@ -148,14 +145,7 @@ function ListItem({ item, listId, boardId }) {
   const handleToggleActive = async () => {
     try {
       const updatedItem = { ...item, isActive: !item.isActive };
-      await axios.put('http://localhost:7000/task/editTask', {
-        taskId: item.id,
-        listId,
-        boardId,
-        name: item.name,
-        isActive: updatedItem.isActive,
-      });
-
+      await editTask(boardId, listId, item.id, item.name, updatedItem.isActive);
       dispatch(toggleItem({ boardId, listId, itemId: item.id }));
     } catch (error) {
       console.error('Ошибка изменения статуса задачи:', error);
@@ -164,7 +154,7 @@ function ListItem({ item, listId, boardId }) {
 
   const handleUpdateItem = async () => {
     try {
-      await axios.put('http://localhost:7000/task/editTask', { name: text, isActive: item.isActive, taskId: item.id, listId, boardId });
+      await editTask(boardId, listId, item.id, text, item.isActive);
       dispatch(updateItem({ boardId, listId, itemId: item.id, text }));
       setIsEditing(false);
     } catch (error) {
@@ -174,7 +164,7 @@ function ListItem({ item, listId, boardId }) {
 
   const onClickRemoveItem = async () => {
     try {
-      await axios.delete('http://localhost:7000/task/deleteTask', { params: { taskId: item.id, listId, boardId } });
+      await deleteTask(boardId, listId, item.id);
       dispatch(removeItem({ boardId, listId, itemId: item.id }));
     } catch (error) {
       console.error('Ошибка удаления задачи:', error);
