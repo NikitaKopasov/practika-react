@@ -12,7 +12,9 @@ function BoardPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const lists = useSelector(state => state.boards.find(board => board.id === Number(boardId))?.lists || []);
+  const board = useSelector(state => state.boards.find(board => board.id === boardId));
+  const boardName = board ? board.name : `Доска ${boardId}`;
+  const lists = board?.lists || [];
 
   useEffect(() => {
     fetchLists(boardId)
@@ -37,7 +39,7 @@ function BoardPage() {
     <div>
       <header className="board-header">
         <img src={smile} alt="Вернуться на главную" className="logo" onClick={OnClickNavigate} />
-        <h1>Доска {boardId}</h1>
+        <h1>{boardName}</h1>
       </header>
 
       <div className="board-page">
