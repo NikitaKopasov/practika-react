@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginUser } from '../component/auth';
+import { useDispatch, useSelector } from 'react-redux';
+import { setEmail, setPassword, loginUserThunk } from '../redux/authSlice';
 import '../component/login.css';
 
 const Login = () => {
-  const [userData, setUserData] = useState({ email: '', password: '' });
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { email, password, loading, error } = useSelector((state) => state.auth);
 
   const handleLogin = async () => {
     try {
-      const data = await loginUser(userData);
-      localStorage.setItem('token', data.token);
+      await dispatch(loginUserThunk({ email, password })).unwrap();
       navigate('/');
-    } catch (err) {
-      console.error('Login error:', err);
+    } catch {
       alert('Ошибка авторизации. Проверьте email и пароль.');
     }
   };
@@ -26,16 +26,19 @@ const Login = () => {
           <div className='email'>
             <label className='label-login'>Логин (Email)</label><br />
             <input className='input-login' type="email" placeholder="Email"
-              value={userData.email} onChange={(e) => setUserData({ ...userData, email: e.target.value })} />
+              value={email} onChange={(e) => dispatch(setEmail(e.target.value))} />
           </div>
           <div className='password'>
             <label className='label-password'>Пароль</label><br />
             <input className='input-password' type="password" placeholder="Пароль"
-              value={userData.password} onChange={(e) => setUserData({ ...userData, password: e.target.value })} />
+              value={password} onChange={(e) => dispatch(setPassword(e.target.value))} />
           </div>
           <div className='LogButton'>
-            <button className='Button-login' type="button" onClick={handleLogin}>Войти</button>
+            <button className='Button-login' type="button" onClick={handleLogin} disabled={loading}>
+              {loading ? 'Вход...' : 'Войти'}
+            </button>
           </div>
+          {error && <p className="error">{typeof error === 'string' ? error : error.message}</p>}
         </form>
         <p className='registr'>Нет аккаунта? <Link to="/registration">Зарегистрироваться</Link></p>
       </div>
